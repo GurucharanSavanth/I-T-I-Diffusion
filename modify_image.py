@@ -1,3 +1,29 @@
+'''
+Note: If the tester or developer using this code to implement there
+own custom dataset this is the format to be followed through:
+
+1) Build a Custom Vector DB with a pipeline to PyTorch or TensorFlow; 
+2) Add a minimum of 32-128 layers; 
+3) Tweak the temperature from 0-1 with decimal pointer changes of +0.01; 
+4) Ensure dataset is cleaned, preprocessed, and labeled accurately with balanced classes; 
+5) Store embeddings in a vector database with efficient indexing, compatible with PyTorch/TensorFlow; 
+6) Experiment with different architectures (UNet, Transformer) and consider residual connections; 
+7) Tune hyperparameters (learning rate, batch size, dropout) using grid or random search; 
+8) Implement a scalable training pipeline with checkpoints and early stopping; 
+9) Apply regularization techniques like weight decay or L2; 10) Define clear evaluation metrics (e.g., FID) and validate on a test set; 
+11) Use advanced data augmentation (random cropping, rotation, CutMix, MixUp); 
+12) Implement post-processing (denoising, sharpening, super-resolution) for output quality; 
+13) Document all steps for reproducibility and use version control for code and datasets.
+
+Currently, I am using my own dataset: "https://huggingface.co/Savanthgc/MyCustomDiffusionModel".
+Author: Gurucharan S.
+The data model I used is a 138B Live DB, trained on images from 2000-2019, with baseline data scraped from 
+Google Images.
+Please note that emails, PRs, or improvement requests are not accepted. 
+If you need additional features, please build your own data model.
+
+'''
+
 import torch
 from PIL import Image
 from diffusers import StableDiffusionImageVariationPipeline
@@ -8,7 +34,7 @@ def modify_image(image_path, prompt, strength, num_variations, resize_option, cu
 
     try:
         sd_pipe = StableDiffusionImageVariationPipeline.from_pretrained(
-            "U2FsdGVkX1/wqzTdNhIIf1sAo/d7F/f3dgNgnNwVMLyvU7yQHVwM2vDjJ7u4dv52r84otG9UzunLQPdQKr7R+A==",## api Hashcode  change this to custom dataset link if requried.
+            "Savanthgc/MyCustomDiffusionModel",## api Hashcode  change this to custom dataset link if requried.
             revision="v2.0",
         ).to(device)
     except Exception as e:
