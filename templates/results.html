@@ -1,0 +1,13 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Variations</title>
+</head>
+<body>
+    <h2>Generated Image Variations</h2>
+    {% for i in range(1, num_variations + 1) %}
+    <img src="{{ url_for('output_file', filename='result_' + i|string + '.jpg') }}">
+    {% endfor %}
+</body>
+</html>

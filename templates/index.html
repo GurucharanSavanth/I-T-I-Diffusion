@@ -1,0 +1,78 @@
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/html">
+<head>
+    <title>Image Modification</title>
+    <script>
+document.getElementById('your-form-id').onsubmit = function() {
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('image-output').innerHTML = ''; // Clear previous images
+    startModelBuilding();
+};
+
+function startModelBuilding() {
+    fetch('/start-model-building', { method: 'POST' })
+    .then(() => checkStatus());
+}
+
+function checkStatus() {
+    fetch('/status')
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('console-log').innerText = data.log;
+        if (!data.complete) {
+            setTimeout(checkStatus, 1000);  // Check every second
+        } else {
+            document.getElementById('loading').style.display = 'none';
+            displayOutputImages(data.num_variations);
+        }
+    });
+}
+
+function displayOutputImages(numVariations) {
+    for (let i = 1; i <= numVariations; i++) {
+        let img = document.createElement('img');
+        img.src = '/output/result_' + i + '.jpg';
+        document.getElementById('image-output').appendChild(img);
+    }
+}
+
+function promptRerunOrExit() {
+    if (confirm("Do you want to process another image?")) {
+        window.location.reload(); // Reload the page for rerun
+    } else {
+        window.close(); // Close the browser window/tab
+    }
+}
+</script>
+</head>
+<body>
+    <form method="post" enctype="multipart/form-data">
+        <label for="image">Upload Image:</label>
+        <input type="file" name="image" id="image" required><br>
+        <label for="prompt">Prompt:</label>
+        <input type="text" name="prompt" id="prompt" required><br>
+        <label for="strength">Strength:</label>
+        <label> <b>Enter from least as 1 and max as 100 </b></label>
+        <input type="range" name="strength" id="strength" min="0" max="1" step="0.1" required><br>
+        <label for="num_variations">Number of Variations:</label>
+        <input type="number" name="num_variations" id="num_variations" required><br>
+        <input type="radio" id="maintain" name="resize_option" value="maintain" checked>
+        <label for="maintain">Maintain Aspect Ratio</label><br>
+        <input type="radio" id="custom" name="resize_option" value="custom">
+        <label for="custom">Custom Size:</label>
+        <input type="number" name="custom_width" id="custom_width">
+        <input type="number" name="custom_height" id="custom_height"><br>
+        <input type="radio" id="no" name="resize_option" value="no">
+        <label for="no">No Resizing</label><br>
+        <input type="submit" value="Submit">
+
+    </form>
+<div id="loading" style="display: none;">Loading...</div>
+<div id="console-log"></div>
+<div id="image-output"></div>
+
+</body>
+
+
+</html>
