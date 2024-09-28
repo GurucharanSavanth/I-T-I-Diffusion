@@ -34,7 +34,7 @@ def modify_image(image_path, prompt, strength, num_variations, resize_option, cu
 
     try:
         sd_pipe = StableDiffusionImageVariationPipeline.from_pretrained(
-            "Savanthgc/MyCustomDiffusionModel",## api Hashcode  change this to custom dataset link if requried.
+            "lambdalabs/sd-image-variations-diffusers",## api Hashcode  change this to custom dataset link if requried.
             revision="v2.0",
         ).to(device)
     except Exception as e:
