@@ -7,7 +7,7 @@ torchvision
 accelerate  
 torch==2.0.1
 transformers>=4.21.0
-Pillow==9.1.1
+Pillow==10.3.0
 optuna==3.0.0
 opencv-python
 huggingface_hub>=0.10.1
