@@ -23,6 +23,7 @@ Please note that emails, PRs, or improvement requests are not accepted.
 If you need additional features, please build your own data model.
 
 '''
+
 import torch
 from PIL import Image
 from diffusers import StableDiffusionImageVariationPipeline
@@ -32,11 +33,10 @@ import os
 import nltk
 from sklearn.neighbors import KNeighborsClassifier
 from xgboost import XGBClassifier
-import psutil  # For checking system memory and CPU
+import psutil
 import numpy as np
 
-nltk.download('punkt')  # Download necessary NLTK data
-
+nltk.download('punkt')
 
 def check_system_resources():
     """Check available memory and CPU usage to decide processing strategy."""
@@ -47,54 +47,42 @@ def check_system_resources():
 
     if memory_info.available < (2 * 1024 * 1024 * 1024):  # Less than 2 GB
         print("Low memory: Reducing batch size or inference steps.")
-        return False  # Signal to reduce resource usage
+        return False
     return True
 
-
 def dynamic_adjustment_based_on_prompt(prompt):
-    """Use NLTK to analyze the prompt and adjust parameters dynamically."""
     tokens = nltk.word_tokenize(prompt)
     word_count = len(tokens)
     if word_count < 5:
-        return 5, 7.0  # Fewer inference steps, lower guidance for simpler prompts
+        return 5, 7.0
     else:
-        return 50, 10.0  # Higher values for more complex prompts
-
+        return 50, 10.0
 
 def classify_image(image_tensor):
-    """Use KNN and XGBoost to classify image features and optimize processing."""
-    # Example feature extraction from image tensor
     flattened_image = image_tensor.view(-1).cpu().numpy()
     knn = KNeighborsClassifier(n_neighbors=3)
     xgb = XGBClassifier()
 
-    # Dummy data to simulate classification
-    X = np.random.rand(100, len(flattened_image))  # 100 random samples
-    y = np.random.randint(0, 2, 100)  # Binary classification
+    X = np.random.rand(100, len(flattened_image))
+    y = np.random.randint(0, 2, 100)
     knn.fit(X, y)
     xgb.fit(X, y)
 
-    # Predict optimal class for this image
     knn_class = knn.predict([flattened_image])
     xgb_class = xgb.predict([flattened_image])
 
     print(f"KNN Classification: {knn_class}, XGBoost Classification: {xgb_class}")
     return knn_class, xgb_class
 
-
-def modify_image(image_path, prompt, strength, num_variations, resize_option, custom_size, batch_size=1,
-                 apply_custom_transforms=False):
+def modify_image(image_path, prompt, strength, num_variations, resize_option, custom_size, batch_size=1, apply_custom_transforms=False):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-    # Check system resources before proceeding
     if not check_system_resources():
-        # Reduce batch size or inference steps if resources are low
         batch_size = max(1, batch_size // 2)
         num_variations = max(1, num_variations // 2)
         print(f"Adjusted batch size: {batch_size}, num_variations: {num_variations}")
 
     try:
-        # Load model
         sd_pipe = StableDiffusionImageVariationPipeline.from_pretrained(
             "lambdalabs/sd-image-variations-diffusers",
             revision="main",
@@ -103,18 +91,16 @@ def modify_image(image_path, prompt, strength, num_variations, resize_option, cu
         print(f"Error loading the model: {e}")
         return
 
-    # Open and preprocess the image
     try:
         im = Image.open(image_path)
     except FileNotFoundError:
         print("The specified image file was not found.")
         return
 
-    # Custom image transformations
     if resize_option == 'custom' and custom_size:
         target_size = custom_size
     else:
-        target_size = (224, 224)  # Default size
+        target_size = (224, 224)
 
     tform = transforms.Compose([
         transforms.ToTensor(),
@@ -124,21 +110,17 @@ def modify_image(image_path, prompt, strength, num_variations, resize_option, cu
 
     inp = tform(im).to(device).unsqueeze(0)
 
-    # Classify image using KNN and XGBoost
     classify_image(inp)
 
-    # Optional: Add custom transformations
     if apply_custom_transforms:
         inp = transforms.RandomHorizontalFlip()(inp)
 
-    # Generate variations
     all_images = []
     for _ in range(batch_size):
         inference_steps, guidance = dynamic_adjustment_based_on_prompt(prompt)
         out = sd_pipe(inp, num_inference_steps=inference_steps, guidance_scale=guidance)
         all_images.extend(out["images"][:num_variations])
 
-    # Save and log results
     if not os.path.exists("outputs"):
         os.makedirs("outputs")
 
@@ -146,7 +128,6 @@ def modify_image(image_path, prompt, strength, num_variations, resize_option, cu
         img.save(f"outputs/result_{i + 1}.jpg")
         print(f"Variation {i + 1} saved.")
 
-    # Optionally save a collage of all images
     if len(all_images) > 1:
         all_tensors = [transforms.ToTensor()(img) for img in all_images]
         save_image(torch.stack(all_tensors), 'outputs/collage.jpg', nrow=5)
