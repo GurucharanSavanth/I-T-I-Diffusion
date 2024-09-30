@@ -35,6 +35,7 @@ venv\Scripts\activate  # For Windows
 ### Install Dependencies
 ```bash
 pip install -r requirements.txt
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
 ```
 
 ## Usage
