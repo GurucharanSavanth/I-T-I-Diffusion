@@ -61,5 +61,4 @@ Contributions, issues, and feature requests are welcome. Feel free to check [iss
 Distributed under the MIT License. See `LICENSE` for more information.
 
 ## Contact
-
 Project Link: [https://github.com/your-repo/image-variation-generator](https://github.comGurucharanSavanth/DeepLearning_Image-text-image)
